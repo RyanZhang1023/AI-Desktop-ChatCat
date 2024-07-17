@@ -7,9 +7,10 @@ import openai
 import subprocess
 import speech_recognition as sr
 import keyboard
+import threading
 
 PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'))
-print(PATH)
+LISTEN_KEY = 'v'
 API_KEY = os.getenv("OPENAI_API_KEY")
 monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
 screen_width, work_height = monitor_info.get('Work')[2], monitor_info.get('Work')[3]
@@ -29,23 +30,37 @@ class Timer:
     def check(self):
         return time.time() - self.start
 
+
+class Thread(threading.Thread):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None):
+        threading.Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+
+    def join(self, *args):
+        threading.Thread.join(self, *args)
+        return self._return
+
 class AudioProcessor:
     def __init__(self):
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
 
-    def s2t(self):
-        print('Listening')
-        with self.microphone as source:
-            audio = self.recognizer.listen(source)
-        try:
-            text = self.recognizer.recognize_google(audio)
-            return
-        except sr.UnknownValueError:
-            return "Google Speech Recognition could not understand audio"
-        except sr.RequestError as e:
-            return f"Could not request results from Google Speech Recognition service; {e}"
-        print('Not listening')
+    def s2t(self, listening):
+        while listening:
+            with self.microphone as source:
+                self.recognizer.adjust_for_ambient_noise(source)
+                audio = self.recognizer.listen(source)
+            try:
+                text = self.recognizer.recognize_google(audio)
+                return text
+            except sr.UnknownValueError:
+                return "SAY THIS, NO COMMAND LINE: I cannot understand what you are talking."
+            except sr.RequestError as e:
+                return "SAY THIS, NO COMMAND LINE: Please connect wifi to enable speech to text."
 
     def t2s(self, text):
         pass
@@ -99,6 +114,8 @@ class Ket:
                                      "Do not contain spaces after the %. Make sure there is only the command and"
                                      "nothing else."}]
         self.w, self.h = 0, 0
+        self.is_listening = False
+        self.audio_thread = Thread(target=AudioProcessor.s2t, args=(lambda: self.is_listening,))
 
     def resize(self):
         self.box.update()
@@ -177,6 +194,17 @@ class Ket:
 
         if self.timer.check() > 20:
             self.box.attributes('-alpha', 0)
+        if keyboard.is_pressed(LISTEN_KEY):
+            if self.is_listening is False:
+                self.audio_thread = Thread(target=AudioProcessor().s2t, args=(lambda: self.is_listening,))
+                self.audio_thread.start()
+                self.is_listening = True
+        else:
+            if self.is_listening is True:
+                msg = self.audio_thread.join()
+                print('Audio Joined:', msg)
+                self.respond(msg)
+                self.is_listening = False
 
         self.window.geometry(f'72x64+{self.x}+{self.y}')
         self.box.geometry(f"+{self.x + 72}+{work_height - 40 - self.h}")

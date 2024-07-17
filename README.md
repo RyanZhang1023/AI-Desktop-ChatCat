@@ -15,6 +15,7 @@ This project creates a desktop kitty that sleeps, wanders around, keeps you comp
 - improve gui for cat interaction
 - more complex behaviors (e.g., eating, dying(purrhaps?), responding to music, being able to control the computer via terminal/cmd)
 - adding more skins for the cat (can be done by AI as well)
+- onedrive
 
 ## Run Instructions
 - set your openai api key as your environment variable with a name called "OPENAI_API_KEY"
