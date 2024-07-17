@@ -53,13 +53,14 @@ class AudioProcessor:
         while listening:
             with self.microphone as source:
                 self.recognizer.adjust_for_ambient_noise(source)
+                print("-" * 10 + 'START SPEAKING' + '-' * 10)
                 audio = self.recognizer.listen(source)
             try:
                 text = self.recognizer.recognize_google(audio)
                 return text
             except sr.UnknownValueError:
                 return "SAY THIS, NO COMMAND LINE: I cannot understand what you are talking."
-            except sr.RequestError as e:
+            except sr.RequestError:
                 return "SAY THIS, NO COMMAND LINE: Please connect wifi to enable speech to text."
 
     def t2s(self, text):
@@ -73,7 +74,6 @@ class Ket:
         self.setup_window()
         self.setup_chat()
         self.timer = Timer()
-        self.window.mainloop()
 
     def load_images(self):
         self.idle = [tk.PhotoImage(file=f'assets/idle{i}.png') for i in range(1, 5)]
@@ -111,7 +111,7 @@ class Ket:
                                      "For example, to restart the computer, you can say: meow~ %shutdown -r -t 00"
                                      "Your current working directory is C:/Users/USERNAME/, only use relative path in"
                                      "your commands. For example, mkdir .\\Desktop\\hi"
-                                     "Do not contain spaces after the %. Make sure there is only the command and"
+                                     "Do not contain spaces or new lines after the %. Make sure there is only the command and"
                                      "nothing else."}]
         self.w, self.h = 0, 0
         self.is_listening = False
@@ -201,10 +201,10 @@ class Ket:
                 self.is_listening = True
         else:
             if self.is_listening is True:
+                self.is_listening = False
                 msg = self.audio_thread.join()
                 print('Audio Joined:', msg)
                 self.respond(msg)
-                self.is_listening = False
 
         self.window.geometry(f'72x64+{self.x}+{self.y}')
         self.box.geometry(f"+{self.x + 72}+{work_height - 40 - self.h}")
@@ -214,3 +214,4 @@ class Ket:
 
 if __name__ == '__main__':
     ket = Ket()
+    ket.window.mainloop()
