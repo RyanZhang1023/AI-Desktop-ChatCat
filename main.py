@@ -5,7 +5,7 @@ import time
 import os
 import openai
 import subprocess
-#import speech_recognition as sr
+import speech_recognition as sr
 import keyboard
 
 PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'))
