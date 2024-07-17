@@ -24,6 +24,16 @@ class Timer:
     def check(self):
         return time.time() - self.start
 
+class AudioProcessor:
+    def __init__(self):
+        pass
+
+    def s2t(self):
+        pass
+
+    def t2s(self, text):
+        pass
+
 
 class Ket:
     def __init__(self):
