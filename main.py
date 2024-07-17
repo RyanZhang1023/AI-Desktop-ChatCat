@@ -4,6 +4,8 @@ from win32api import GetMonitorInfo, MonitorFromPoint
 import time
 import os
 import openai
+import speech_recognition as sr
+import pyaudio
 
 API_KEY = os.getenv("OPENAI_API_KEY")
 monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
@@ -12,7 +14,6 @@ screen_width, work_height = monitor_info.get('Work')[2], monitor_info.get('Work'
 idle_num = list(range(1, 12))
 sleep_num = list(range(19, 26))
 walk_left, walk_right = [13, 14, 15], [16, 17, 18]
-
 
 class Timer:
     def __init__(self):
@@ -26,10 +27,22 @@ class Timer:
 
 class AudioProcessor:
     def __init__(self):
-        pass
+        self.recognizer = sr.Recognizer()
+        self.microphone = sr.Microphone()
 
     def s2t(self):
-        pass
+        with self.microphone as source:
+            self.recognizer.adjust_for_ambient_noise(source)
+            audio = self.recognizer.listen(source)
+        try:
+            text = self.recognizer.recognize_google(audio)
+            return text
+        except sr.UnknownValueError:
+            print("A")
+            return None
+        except sr.RequestError as e:
+            print("B")
+            return None
 
     def t2s(self, text):
         pass
@@ -155,3 +168,6 @@ class Ket:
 
 
 ket = Ket()
+
+# processor = AudioProcessor()
+# print(processor.s2t())
