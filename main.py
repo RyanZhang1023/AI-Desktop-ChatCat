@@ -5,7 +5,7 @@ import time
 import os
 import openai
 import speech_recognition as sr
-import pyaudio
+import keyboard
 
 API_KEY = os.getenv("OPENAI_API_KEY")
 monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
@@ -31,18 +31,17 @@ class AudioProcessor:
         self.microphone = sr.Microphone()
 
     def s2t(self):
+        print('Listening')
         with self.microphone as source:
-            self.recognizer.adjust_for_ambient_noise(source)
             audio = self.recognizer.listen(source)
         try:
             text = self.recognizer.recognize_google(audio)
-            return text
+            return
         except sr.UnknownValueError:
-            print("A")
-            return None
+            return "Google Speech Recognition could not understand audio"
         except sr.RequestError as e:
-            print("B")
-            return None
+            return f"Could not request results from Google Speech Recognition service; {e}"
+        print('Not listening')
 
     def t2s(self, text):
         pass
@@ -166,8 +165,18 @@ class Ket:
         self.label.configure(image=self.frame)
         self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
+'''processor = AudioProcessor()
+while 1:
+    if keyboard.is_pressed('r'):
+        print("Listening")
+        print(processor.s2t())'''
 
-ket = Ket()
+#
+processor = AudioProcessor()
 
-# processor = AudioProcessor()
-# print(processor.s2t())
+while 1:
+    if keyboard.is_pressed('r'):
+        print(processor.s2t())
+#
+
+# ket = Ket()
