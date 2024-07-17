@@ -4,9 +4,12 @@ from win32api import GetMonitorInfo, MonitorFromPoint
 import time
 import os
 import openai
-import speech_recognition as sr
-import pyaudio
+import subprocess
+#import speech_recognition as sr
+#import pyaudio
 
+PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'))
+print(PATH)
 API_KEY = os.getenv("OPENAI_API_KEY")
 monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
 screen_width, work_height = monitor_info.get('Work')[2], monitor_info.get('Work')[3]
@@ -14,6 +17,7 @@ screen_width, work_height = monitor_info.get('Work')[2], monitor_info.get('Work'
 idle_num = list(range(1, 12))
 sleep_num = list(range(19, 26))
 walk_left, walk_right = [13, 14, 15], [16, 17, 18]
+
 
 class Timer:
     def __init__(self):
@@ -86,7 +90,15 @@ class Ket:
         self.box.geometry(f"200x40+{self.x + 72}+{self.y}")
         self.chat_label = tk.Label(self.box, text='asdf', font=("Helvetica", 11), fg="black", wraplength=300)
         self.chat_label.pack()
-        self.messages = [{"role": "system", "content": "You are a desktop cat named Lucy. You are 4 years old. Speak like a cat."}]
+        self.messages = [{"role": "system",
+                          "content": "You are a desktop cat named Lucy. You are 4 years old. Speak like a cat. "
+                                     "You can control the computer by suggesting one windows cmd command each time."
+                                     "Use one % to separate your speech from the unix command. "
+                                     "For example, to restart the computer, you can say: meow~ %shutdown -r -t 00"
+                                     "Your current working directory is C:/Users/USERNAME/, only use relative path in"
+                                     "your commands. For example, mkdir .\\Desktop\\hi"
+                                     "Do not contain spaces after the %. Make sure there is only the command and"
+                                     "nothing else."}]
         self.w, self.h = 0, 0
 
     def resize(self):
@@ -124,6 +136,7 @@ class Ket:
     def open_subwindow(self):
         subwindow = tk.Toplevel(self.window)
         subwindow.geometry(f"300x150+{self.x}+{self.y - 150}")
+        subwindow.attributes('-topmost', True)
         subwindow.overrideredirect(True)
         tk.Label(subwindow, text="Say to Your Cat:").pack(pady=10)
         self.textbox = tk.Entry(subwindow, width=250)
@@ -141,7 +154,12 @@ class Ket:
             messages=self.messages + [{'role': 'user', 'content': msg}],
             model="gpt-4o"
         )
-        response_text = response.choices[0].message.content
+        output = response.choices[0].message.content.split('%')
+        print(output)
+        response_text = output[0]
+        if len(output) == 2:
+            cmd = output[1]
+            subprocess.Popen(cmd, shell=True, cwd=PATH)
         self.messages += [{'role': 'user', 'content': msg}, {'role': 'assistant', 'content': response_text}]
         self.box.geometry("1920x1080")
         self.chat_label.config(text=response_text)
@@ -167,7 +185,5 @@ class Ket:
         self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
 
-ket = Ket()
-
-# processor = AudioProcessor()
-# print(processor.s2t())
+if __name__ == '__main__':
+    ket = Ket()
