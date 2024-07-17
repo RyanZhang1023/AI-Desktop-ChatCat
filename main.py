@@ -161,7 +161,7 @@ class Ket:
         self.textbox = tk.Entry(subwindow, width=250, bd=0)
         self.textbox.configure(background='light gray')
         self.textbox.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
-        self.textbox.insert(0, "Say to your cat:")
+        self.textbox.insert(0, "Say hi to your cat:")
         self.textbox.bind("<FocusIn>", self.clear_placeholder)
         self.textbox.bind("<Return>", lambda event: self.get_message(subwindow))
 
@@ -173,6 +173,11 @@ class Ket:
     def close_subwindow(self, subwindow):
         self.subwindow_open = False
         subwindow.destroy()
+
+    def clear_placeholder(self, event):
+        # Function to clear placeholder text when textbox is focused
+        if self.textbox.get() == "Say hi to your cat:":
+            self.textbox.delete(0, tk.END)
 
     def respond(self, msg):
         response = self.chat.chat.completions.create(
