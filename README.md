@@ -22,4 +22,4 @@ This project creates a desktop kitty that sleeps, wanders around, keeps you comp
 
 ## Contributions
 - this project is based off the open source project [Desktop Cat](https://github.com/1ilit/Desktop-Cat)
-- ryan and sihao
+- Ryan and Sihao
