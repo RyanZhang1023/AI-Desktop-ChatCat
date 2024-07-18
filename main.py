@@ -12,6 +12,7 @@ import threading
 PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'))
 LISTEN_KEY = 'v'
 API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI = openai.OpenAI(api_key=API_KEY)
 monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
 screen_width, work_height = monitor_info.get('Work')[2], monitor_info.get('Work')[3]
 
@@ -32,7 +33,7 @@ class Timer:
 
 
 class Thread(threading.Thread):
-    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}, Verbose=None):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
         threading.Thread.__init__(self, group, target, name, args, kwargs)
         self._return = None
 
@@ -62,9 +63,6 @@ class AudioProcessor:
                 return "SAY THIS, NO COMMAND LINE: I cannot understand what you are talking."
             except sr.RequestError:
                 return "SAY THIS, NO COMMAND LINE: Please connect wifi to enable speech to text."
-
-    def t2s(self, text):
-        pass
 
 
 class Ket:
@@ -101,7 +99,7 @@ class Ket:
         self.window.bind("<ButtonRelease-1>", self.on_release)
 
     def setup_chat(self):
-        self.chat = openai.OpenAI(api_key=API_KEY)
+        self.activity_scale = 3 # From 1 to 10
         self.message, self.subwindow_open = tk.StringVar(), False
         self.box = tk.Tk()
         self.box.attributes("-alpha", 0, "-topmost", True)
@@ -121,7 +119,6 @@ class Ket:
                                      "nothing else."}]
         self.w, self.h = 0, 0
         self.is_listening = False
-        self.audio_thread = Thread(target=AudioProcessor.s2t, args=(lambda: self.is_listening,))
 
     def resize(self):
         self.box.update()
@@ -171,8 +168,10 @@ class Ket:
         self.box.geometry(f"+{self.x + 72}+{self.y}")
 
     def on_release(self, event):
+        if self.is_dragging is True:
+            if randint(1, 10) <= self.activity_scale:
+                self.respond("You are clicked by me.")
         self.is_dragging = False
-        #self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
     def open_subwindow(self):
         # Window
@@ -224,7 +223,7 @@ class Ket:
             self.textbox.delete(0, tk.END)
 
     def respond(self, msg):
-        response = self.chat.chat.completions.create(
+        response = OPENAI.chat.completions.create(
             messages=self.messages + [{'role': 'user', 'content': msg}],
             model="gpt-4o"
         )
