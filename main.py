@@ -187,6 +187,7 @@ class Ket:
         canvas.pack(pady=0)
 
         radius = 20
+
         x0, y0, x1, y1 = 10, 10, 270, 40
         canvas.create_arc(x0, y0, x0 + radius, y0 + radius, start=90, extent=90, fill='white', outline='white')
         canvas.create_arc(x1 - radius, y0, x1, y0 + radius, start=0, extent=90, fill='white', outline='white')
