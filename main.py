@@ -9,7 +9,7 @@ import speech_recognition as sr
 import keyboard
 import threading
 
-PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'), 'OneDrive')
+PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'))
 LISTEN_KEY = 'v'
 API_KEY = os.getenv("OPENAI_API_KEY")
 monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
