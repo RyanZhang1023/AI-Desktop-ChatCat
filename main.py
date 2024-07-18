@@ -93,7 +93,12 @@ class Ket:
         self.window.attributes('-topmost', True, '-transparentcolor', 'black')
         self.label.pack()
         self.window.after(1, self.update, self.i_frame, self.state, self.event_number, self.x)
-        self.window.bind("<Button-1>", self.on_click)
+        self.is_dragging = False
+        self.start_x, self.start_y, self.cur_x, self.cur_y = 0, 0, 0, 0
+        self.window.bind("<Double-Button-1>", self.on_double_click)
+        self.window.bind("<ButtonPress-1>", self.on_click)
+        self.window.bind("<B1-Motion>", self.on_drag)
+        self.window.bind("<ButtonRelease-1>", self.on_release)
 
     def setup_chat(self):
         self.chat = openai.OpenAI(api_key=API_KEY)
@@ -107,7 +112,8 @@ class Ket:
         self.messages = [{"role": "system",
                           "content": "You are a desktop cat named Lucy. You are 4 years old. Speak like a cat. "
                                      "You can control the computer by suggesting one windows cmd command each time."
-                                     "Use one % to separate your speech from the unix command. "
+                                     "For example, when you are asked to open websites."
+                                     "Use one % to separate your speech from the cmd command. "
                                      "For example, to restart the computer, you can say: meow~ %shutdown -r -t 00"
                                      "Your current working directory is C:/Users/USERNAME/, only use relative path in"
                                      "your commands. For example, mkdir .\\Desktop\\hi"
@@ -120,7 +126,7 @@ class Ket:
     def resize(self):
         self.box.update()
         self.w, self.h = self.chat_label.winfo_width(), self.chat_label.winfo_height()
-        self.box.geometry(f"{self.w + 50}x{self.h}+{self.x + 72}+{work_height - 40 - self.h}")
+        self.box.geometry(f"{self.w + 50}x{self.h}")
 
     def event(self, i_frame, state, event_number, x):
         if self.event_number in idle_num:
@@ -144,10 +150,29 @@ class Ket:
             self.event_number = randint(a, b)
         return self.i_frame, self.event_number
 
-    def on_click(self, event):
+    def on_double_click(self, event):
         if not self.subwindow_open:
             self.open_subwindow()
             self.subwindow_open = True
+
+    def on_click(self, event):
+        self.is_dragging = True
+        self.start_x = event.x_root
+        self.start_y = event.y_root
+
+    def on_drag(self, event):
+        if self.is_dragging is False:
+            return
+        self.x += event.x_root - self.start_x
+        self.y += event.y_root - self.start_y
+        self.start_x = event.x_root
+        self.start_y = event.y_root
+        self.window.geometry(f'72x64+{self.x}+{self.y}')
+        self.box.geometry(f"+{self.x + 72}+{self.y}")
+
+    def on_release(self, event):
+        self.is_dragging = False
+        self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
     def open_subwindow(self):
         subwindow = tk.Toplevel(self.window)
@@ -176,12 +201,22 @@ class Ket:
         if len(output) == 2:
             cmd = output[1]
             subprocess.Popen(cmd, shell=True, cwd=PATH)
-        self.messages += [{'role': 'user', 'content': msg}, {'role': 'assistant', 'content': response_text}]
+        self.messages += [{'role': 'user', 'content': msg}, {'role': 'assistant', 'content': '%'.join(output)}]
         self.box.geometry("1920x1080")
         self.chat_label.config(text=response_text)
         self.resize()
         self.box.attributes('-alpha', 0.8)
         self.timer.begin()
+
+    def pos_bound(self):
+        if self.y > work_height:
+            self.y = work_height
+        elif self.y < 0:
+            self.y = 0
+        if self.x > screen_width - 40:
+            self.x = screen_width - 40
+        elif self.x < 40:
+            self.x = 40
 
     def update(self, i_frame, state, event_number, x):
         animations = [
@@ -206,10 +241,12 @@ class Ket:
                 print('Audio Joined:', msg)
                 self.respond(msg)
 
+        self.pos_bound()
         self.window.geometry(f'72x64+{self.x}+{self.y}')
-        self.box.geometry(f"+{self.x + 72}+{work_height - 40 - self.h}")
+        self.box.geometry(f"+{self.x + 72}+{self.y}")
         self.label.configure(image=self.frame)
-        self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
+        if self.is_dragging is False:
+            self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
 
 if __name__ == '__main__':
