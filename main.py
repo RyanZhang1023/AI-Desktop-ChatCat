@@ -177,8 +177,8 @@ class Ket:
     def open_subwindow(self):
         # Window
         subwindow = tk.Toplevel(self.window)
-        subwindow.geometry(f"300x50+{self.x}+{self.y - 50}")
-        subwindow.attributes('-topmost', True)
+        subwindow.geometry(f"300x50+{self.x + 72}+{self.y}")
+        subwindow.attributes('-topmost', True, '-transparentcolor', 'dark gray', '-alpha', 0.8)
         subwindow.overrideredirect(True)
         subwindow.configure(background='dark gray')
 
@@ -186,7 +186,7 @@ class Ket:
         canvas = tk.Canvas(subwindow, width=300, height=50, bg='dark gray', highlightthickness=0)
         canvas.pack(pady=0)
 
-        radius = 20
+        radius = 30
 
         x0, y0, x1, y1 = 10, 10, 270, 40
         canvas.create_arc(x0, y0, x0 + radius, y0 + radius, start=90, extent=90, fill='white', outline='white')
