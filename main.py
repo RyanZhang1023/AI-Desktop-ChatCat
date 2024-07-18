@@ -172,7 +172,7 @@ class Ket:
 
     def on_release(self, event):
         self.is_dragging = False
-        self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
+        #self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
     def open_subwindow(self):
         # Window
@@ -186,7 +186,7 @@ class Ket:
         self.textbox = tk.Entry(subwindow, width=250, bd=0)
         self.textbox.configure(background='light gray')
         self.textbox.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
-        self.textbox.insert(0, "Say hi to your cat:")
+        self.textbox.insert(0, "Say to your cat:")
         self.textbox.bind("<FocusIn>", self.clear_placeholder)
         self.textbox.bind("<Return>", lambda event: self.get_message(subwindow))
 
@@ -201,7 +201,7 @@ class Ket:
 
     def clear_placeholder(self, event):
         # Function to clear placeholder text when textbox is focused
-        if self.textbox.get() == "Say hi to your cat:":
+        if self.textbox.get() == "Say to your cat:":
             self.textbox.delete(0, tk.END)
 
     def respond(self, msg):
@@ -214,7 +214,8 @@ class Ket:
         response_text = output[0]
         if len(output) == 2:
             cmd = output[1]
-            subprocess.Popen(cmd, shell=True, cwd=PATH)
+            out = subprocess.Popen(cmd, shell=True, cwd=PATH, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(out.stdout.read().decode('gbk'))
         self.messages += [{'role': 'user', 'content': msg}, {'role': 'assistant', 'content': '%'.join(output)}]
         self.box.geometry("1920x1080")
         self.chat_label.config(text=response_text)
@@ -238,6 +239,7 @@ class Ket:
             (self.sleeping, self.event_number, 19, 26), (self.sleeping_to_idle, self.event_number, 1, 1),
             (self.walking_left, self.event_number, 1, 18), (self.walking_right, self.event_number, 1, 18)
         ]
+        print(state, self.i_frame)
         self.frame = animations[state][0][self.i_frame]
         self.i_frame, self.event_number = self.animate(self.i_frame, *animations[state])
 
@@ -259,8 +261,7 @@ class Ket:
         self.window.geometry(f'72x64+{self.x}+{self.y}')
         self.box.geometry(f"+{self.x + 72}+{self.y}")
         self.label.configure(image=self.frame)
-        if self.is_dragging is False:
-            self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
+        self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
 
 if __name__ == '__main__':
