@@ -177,17 +177,30 @@ class Ket:
     def open_subwindow(self):
         # Window
         subwindow = tk.Toplevel(self.window)
-        subwindow.geometry(f"300x175+{self.x}+{self.y - 150}")
+        subwindow.geometry(f"300x50+{self.x}+{self.y - 50}")
         subwindow.attributes('-topmost', True)
         subwindow.overrideredirect(True)
         subwindow.configure(background='dark gray')
 
+        # Rounded Rectangle
+        canvas = tk.Canvas(subwindow, width=300, height=50, bg='dark gray', highlightthickness=0)
+        canvas.pack(pady=0)
+
+        radius = 20
+        x0, y0, x1, y1 = 10, 10, 270, 40
+        canvas.create_arc(x0, y0, x0 + radius, y0 + radius, start=90, extent=90, fill='white', outline='white')
+        canvas.create_arc(x1 - radius, y0, x1, y0 + radius, start=0, extent=90, fill='white', outline='white')
+        canvas.create_arc(x0, y1 - radius, x0 + radius, y1, start=180, extent=90, fill='white', outline='white')
+        canvas.create_arc(x1 - radius, y1 - radius, x1, y1, start=270, extent=90, fill='white', outline='white')
+        canvas.create_rectangle(x0 + radius / 2, y0, x1 - radius / 2, y1, fill='white', outline='white')
+        canvas.create_rectangle(x0, y0 + radius / 2, x1, y1 - radius / 2, fill='white', outline='white')
+
         # Textbox
-        self.textbox = tk.Entry(subwindow, width=250, bd=0)
-        self.textbox.configure(background='light gray')
-        self.textbox.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
-        self.textbox.insert(0, "Say to your cat:")
+        self.textbox = tk.Entry(subwindow, bd=0, bg='white', font=("Arial", 12))
+        self.textbox.place(x=25, y=15, width=230, height=20)
+        self.textbox.insert(0, "Say hi to your cat:")
         self.textbox.bind("<FocusIn>", self.clear_placeholder)
+        self.textbox.bind("<FocusOut>", self.set_placeholder)
         self.textbox.bind("<Return>", lambda event: self.get_message(subwindow))
 
     def get_message(self, subwindow):
@@ -199,9 +212,14 @@ class Ket:
         self.subwindow_open = False
         subwindow.destroy()
 
+    def set_placeholder(self, event):
+        if not self.textbox.get():
+            self.textbox.insert(0, "Say hi to your cat:")
+            # self.textbox.configure(fg='gray')
+
     def clear_placeholder(self, event):
         # Function to clear placeholder text when textbox is focused
-        if self.textbox.get() == "Say to your cat:":
+        if self.textbox.get() == "Say hi to your cat:":
             self.textbox.delete(0, tk.END)
 
     def respond(self, msg):
