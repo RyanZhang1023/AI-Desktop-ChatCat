@@ -239,7 +239,6 @@ class Ket:
             (self.sleeping, self.event_number, 19, 26), (self.sleeping_to_idle, self.event_number, 1, 1),
             (self.walking_left, self.event_number, 1, 18), (self.walking_right, self.event_number, 1, 18)
         ]
-        print(state, self.i_frame)
         self.frame = animations[state][0][self.i_frame]
         self.i_frame, self.event_number = self.animate(self.i_frame, *animations[state])
 
