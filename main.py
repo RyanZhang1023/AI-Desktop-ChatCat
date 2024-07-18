@@ -7,6 +7,7 @@ import openai
 import subprocess
 import speech_recognition as sr
 import keyboard
+import math
 import threading
 
 PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'))
@@ -119,6 +120,7 @@ class Ket:
                                      "nothing else."}]
         self.w, self.h = 0, 0
         self.is_listening = False
+        self.idle_time = time.time()
 
     def resize(self):
         self.box.update()
@@ -139,6 +141,8 @@ class Ket:
         elif self.event_number == 26:
             self.state = 3
 
+        if randint(1, 100) < self.idle_function(time.time()-self.idle_time):
+            self.respond('Find a topic to talk to me')
         self.window.after(100 if self.state in {1, 3, 4, 5} else 400, self.update, self.i_frame, self.state, self.event_number, self.x)
 
     def animate(self, i_frame, array, event_number, a, b):
@@ -170,10 +174,14 @@ class Ket:
     def on_release(self, event):
         self.is_dragging = False
 
+    @staticmethod
+    def idle_function(x):
+        return 100/(1 + math.e ** (-0.05 * (x - 180)))
+
     def open_subwindow(self):
         # Window
         subwindow = tk.Toplevel(self.window)
-        subwindow.geometry(f"300x50+{self.x + 72}+{self.y}")
+        subwindow.geometry(f"300x50+{self.x}+{self.y - 50}")
         subwindow.attributes('-topmost', True, '-transparentcolor', 'dark gray', '-alpha', 0.8)
         subwindow.overrideredirect(True)
         subwindow.configure(background='dark gray')
@@ -220,6 +228,7 @@ class Ket:
             self.textbox.delete(0, tk.END)
 
     def respond(self, msg):
+        self.idle_time = time.time()
         response = OPENAI.chat.completions.create(
             messages=self.messages + [{'role': 'user', 'content': msg}],
             model="gpt-4o"
