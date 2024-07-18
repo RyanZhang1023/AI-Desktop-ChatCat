@@ -9,7 +9,7 @@ import speech_recognition as sr
 import keyboard
 import threading
 
-PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'))
+PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'), 'OneDrive')
 LISTEN_KEY = 'v'
 API_KEY = os.getenv("OPENAI_API_KEY")
 monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
@@ -175,20 +175,34 @@ class Ket:
         self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
     def open_subwindow(self):
+        # Window
         subwindow = tk.Toplevel(self.window)
-        subwindow.geometry(f"300x150+{self.x}+{self.y - 150}")
+        subwindow.geometry(f"300x175+{self.x}+{self.y - 150}")
         subwindow.attributes('-topmost', True)
         subwindow.overrideredirect(True)
-        tk.Label(subwindow, text="Say to Your Cat:").pack(pady=10)
-        self.textbox = tk.Entry(subwindow, width=250)
-        self.textbox.pack(pady=10, padx=25)
-        tk.Button(subwindow, text="Send", command=lambda: self.get_message(subwindow)).pack(pady=10)
+        subwindow.configure(background='dark gray')
+
+        # Textbox
+        self.textbox = tk.Entry(subwindow, width=250, bd=0)
+        self.textbox.configure(background='light gray')
+        self.textbox.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
+        self.textbox.insert(0, "Say hi to your cat:")
+        self.textbox.bind("<FocusIn>", self.clear_placeholder)
+        self.textbox.bind("<Return>", lambda event: self.get_message(subwindow))
 
     def get_message(self, subwindow):
         self.message.set(self.textbox.get())
-        subwindow.destroy()
-        self.subwindow_open = False
+        self.close_subwindow(subwindow)
         self.respond(self.message.get())
+
+    def close_subwindow(self, subwindow):
+        self.subwindow_open = False
+        subwindow.destroy()
+
+    def clear_placeholder(self, event):
+        # Function to clear placeholder text when textbox is focused
+        if self.textbox.get() == "Say hi to your cat:":
+            self.textbox.delete(0, tk.END)
 
     def respond(self, msg):
         response = self.chat.chat.completions.create(
