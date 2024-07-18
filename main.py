@@ -99,16 +99,16 @@ class Ket:
         self.window.bind("<ButtonRelease-1>", self.on_release)
 
     def setup_chat(self):
-        self.activity_scale = 3 # From 1 to 10
+        self.activity_scale = 3 # From 1 to 100
         self.message, self.subwindow_open = tk.StringVar(), False
         self.box = tk.Tk()
         self.box.attributes("-alpha", 0, "-topmost", True)
         self.box.overrideredirect(True)
-        self.box.geometry(f"200x40+{self.x + 72}+{self.y}")
+        self.box.geometry(f"+{self.x + 72}+{self.y}")
         self.chat_label = tk.Label(self.box, text='asdf', font=("Helvetica", 11), fg="black", wraplength=300)
         self.chat_label.pack()
         self.messages = [{"role": "system",
-                          "content": "You are a desktop cat named Lucy. You are 4 years old. Speak like a cat. "
+                          "content": "You are a desktop cat named Lucy. You are 4 years old. Speak like a cat."
                                      "You can control the computer by suggesting one windows cmd command each time."
                                      "For example, when you are asked to open websites."
                                      "Use one % to separate your speech from the cmd command. "
@@ -123,7 +123,7 @@ class Ket:
     def resize(self):
         self.box.update()
         self.w, self.h = self.chat_label.winfo_width(), self.chat_label.winfo_height()
-        self.box.geometry(f"{self.w + 50}x{self.h}")
+        self.box.geometry(f"{self.w + 50}x{self.h}+{self.x + 72}+{min(self.y, work_height - self.h)}")
 
     def event(self, i_frame, state, event_number, x):
         if self.event_number in idle_num:
@@ -168,9 +168,6 @@ class Ket:
         self.box.geometry(f"+{self.x + 72}+{self.y}")
 
     def on_release(self, event):
-        if self.is_dragging is True:
-            if randint(1, 10) <= self.activity_scale:
-                self.respond("You are clicked by me.")
         self.is_dragging = False
 
     def open_subwindow(self):
@@ -232,8 +229,18 @@ class Ket:
         response_text = output[0]
         if len(output) == 2:
             cmd = output[1]
-            out = subprocess.Popen(cmd, shell=True, cwd=PATH, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(out.stdout.read().decode('gbk'))
+            try:
+                proc = subprocess.Popen(cmd, shell=True, cwd=PATH, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                timeout = threading.Timer(1.5, proc.kill)
+                try:
+                    timeout.start()
+                    print(proc.stdout.read().decode('gbk'))
+                except:
+                    self.respond(f"You timed out when executing the command")
+                finally:
+                    timeout.cancel()
+            except Exception as e:
+                self.respond(f"You ran into an error when executing the command: {e}")
         self.messages += [{'role': 'user', 'content': msg}, {'role': 'assistant', 'content': '%'.join(output)}]
         self.box.geometry("1920x1080")
         self.chat_label.config(text=response_text)
@@ -276,7 +283,7 @@ class Ket:
 
         self.pos_bound()
         self.window.geometry(f'72x64+{self.x}+{self.y}')
-        self.box.geometry(f"+{self.x + 72}+{self.y}")
+        self.box.geometry(f"+{self.x + 72}+{min(self.y, work_height - self.h)}")
         self.label.configure(image=self.frame)
         self.window.after(1, self.event, self.i_frame, self.state, self.event_number, self.x)
 
