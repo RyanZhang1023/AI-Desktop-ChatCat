@@ -19,7 +19,8 @@ This project creates a desktop kitty that sleeps, wanders around, keeps you comp
 
 ## Run Instructions
 - set your openai api key as your environment variable with a name called "OPENAI_API_KEY"
-- open the root folder where the project is installed and run ``py main.py``
+- open the root folder where the project is installed and run py ``main.py``
+- press key ~ to activate voice input
 
 ## Contributions
 - this project is based off the open source project [Desktop Cat](https://github.com/1ilit/Desktop-Cat)

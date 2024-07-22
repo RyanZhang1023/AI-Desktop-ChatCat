@@ -11,7 +11,7 @@ import math
 import threading
 
 PATH = os.path.join('C:\\Users', os.environ.get('USERNAME'))
-LISTEN_KEY = 'v'
+LISTEN_KEY = '~'
 API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI = openai.OpenAI(api_key=API_KEY)
 monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
@@ -45,6 +45,7 @@ class Thread(threading.Thread):
     def join(self, *args):
         threading.Thread.join(self, *args)
         return self._return
+
 
 class AudioProcessor:
     def __init__(self):
@@ -109,7 +110,8 @@ class Ket:
         self.chat_label = tk.Label(self.box, text='asdf', font=("Helvetica", 11), fg="black", wraplength=300)
         self.chat_label.pack()
         self.messages = [{"role": "system",
-                          "content": "You are a desktop cat named Lucy. You are 4 years old. Speak like a cat."
+                          "content": "You are a desktop cat named Lucy. "
+                                     "You are 4 years old. Speak like a cat."
                                      "You can control the computer by suggesting one windows cmd command each time."
                                      "For example, when you are asked to open websites."
                                      "Use one % to separate your speech from the cmd command. "
@@ -142,7 +144,7 @@ class Ket:
             self.state = 3
 
         if randint(1, 100) < self.idle_function(time.time()-self.idle_time):
-            self.respond('Find a topic to talk to me')
+            self.respond('Find a topic to talk to me') # Automated Prompting
         self.window.after(100 if self.state in {1, 3, 4, 5} else 400, self.update, self.i_frame, self.state, self.event_number, self.x)
 
     def animate(self, i_frame, array, event_number, a, b):
@@ -220,7 +222,6 @@ class Ket:
     def set_placeholder(self, event):
         if not self.textbox.get():
             self.textbox.insert(0, "Say hi to your cat:")
-            # self.textbox.configure(fg='gray')
 
     def clear_placeholder(self, event):
         # Function to clear placeholder text when textbox is focused
@@ -228,11 +229,11 @@ class Ket:
             self.textbox.delete(0, tk.END)
 
     def respond(self, msg):
-        self.idle_time = time.time()
         response = OPENAI.chat.completions.create(
             messages=self.messages + [{'role': 'user', 'content': msg}],
             model="gpt-4o"
         )
+        self.idle_time = time.time()
         output = response.choices[0].message.content.split('%')
         print(output)
         response_text = output[0]
